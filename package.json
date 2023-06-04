@@ -1,0 +1,32 @@
+{
+  "name": "fastify-ts-boilerplate",
+  "version": "1.0.0",
+  "license": "MIT",
+  "prisma": {
+    "schema": "./src/core/database/prisma/.schema.prisma"
+  },
+  "scripts": {
+    "dev": "tsx watch src/app.server.ts",
+    "prisma:create-schema": "rm -f ./src/core/database/prisma/.schema.prisma && cat ./src/core/database/prisma/base.prisma ./src/core/database/prisma/models/*.prisma > ./src/core/database/prisma/.schema.prisma",
+    "migration:generate": "prisma migrate dev --create-only",
+    "migration:run:dev": "prisma migrate dev",
+    "migration:run": "prisma migrate deploy",
+    "migration:rollback": "prisma migrate reset"
+  },
+  "dependencies": {
+    "@fastify/cors": "^8.3.0",
+    "@fastify/swagger": "^8.5.1",
+    "@fastify/swagger-ui": "^1.8.1",
+    "@prisma/client": "4.14.1",
+    "dotenv": "^16.0.3",
+    "fastify": "^4.17.0"
+  },
+  "devDependencies": {
+    "@rocketseat/eslint-config": "^1.2.0",
+    "@types/node": "^20.2.3",
+    "eslint": "^8.41.0",
+    "prisma": "^4.14.1",
+    "tsx": "^3.12.7",
+    "typescript": "^5.0.4"
+  }
+}
