@@ -1,17 +1,22 @@
 import { Controller } from '../../core/framework/controller'
 import { Delete, Get, Post, Put } from '../../core/framework/http'
-import { Reply, Request } from '../../core/server'
+import { LogMiddleware } from '../../core/middlewares/log.middleware'
+import { Reply, Request, ServerError } from '../../core/server'
 import { CreateUserDTO, UpdateUserDTO } from './users.dto'
 import { User } from './users.entity'
+
+const DELETE_SUCCESSFULLY = 'User deleted successfully'
+const NOT_FOUND = 'Not Found'
+const MSG_404 = 'User not found'
 
 export class UserController extends Controller {
   constructor() {
     super()
-    Post('/users', this.store.bind(this))
-    Get('/users/:id', this.retrieve.bind(this))
-    Get('/users', this.list.bind(this))
-    Put('/users/:id', this.update.bind(this))
-    Delete('/users/:id', this.destroy.bind(this))
+    Post('/users', this.store.bind(this), [LogMiddleware.execute])
+    Get('/users/:id', this.retrieve.bind(this), [LogMiddleware.execute])
+    Get('/users', this.list.bind(this), [LogMiddleware.execute])
+    Put('/users/:id', this.update.bind(this), [LogMiddleware.execute])
+    Delete('/users/:id', this.destroy.bind(this), [LogMiddleware.execute])
   }
 
   async store(request: Request, reply: Reply): Promise<void> {
@@ -28,6 +33,10 @@ export class UserController extends Controller {
 
     if (email) {
       const user = await this.providers.retrieveUser.execute(email, 'email')
+
+      if (!user)
+        throw new ServerError({ name: NOT_FOUND, message: MSG_404, code: 404 })
+
       return reply.send({ user })
     }
 
@@ -37,8 +46,11 @@ export class UserController extends Controller {
 
   async retrieve(request: Request, reply: Reply) {
     const { id } = request?.params as { id: string }
-
     const user = await this.providers.retrieveUser.execute(id)
+
+    if (!user)
+      throw new ServerError({ name: NOT_FOUND, message: MSG_404, code: 404 })
+
     reply.send({ user })
   }
 
@@ -55,6 +67,6 @@ export class UserController extends Controller {
     const { id } = request?.params as { id: string }
 
     await this.providers.deleteUser.execute(id)
-    reply.send({ message: 'User deleted successfully' })
+    reply.send({ message: DELETE_SUCCESSFULLY })
   }
 }

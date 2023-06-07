@@ -4,7 +4,7 @@ import { IUser } from './users.interface'
 export class User implements IUser {
   id?: string
   email: string
-  password: string
+  private _password: string
   profileId: string
   profile?: Profile | null
   createdAt?: Date | null
@@ -14,7 +14,7 @@ export class User implements IUser {
   constructor(props: IUser) {
     this.id = props.id
     this.email = props.email
-    this.password = props.password
+    this._password = props.password
     this.profileId = props.profileId
     this.profile = props.profile ?? null
     this.createdAt = props.createdAt ?? null
@@ -22,18 +22,16 @@ export class User implements IUser {
     this.deletedAt = props.deletedAt ?? null
   }
 
-  validate() {
-    if (!this.email) {
-      throw new Error('User email is required.')
-    }
-
-    if (!this.password) {
-      throw new Error('User password is required.')
-    }
+  set password(password: string) {
+    this._password = password
   }
 
-  isPasswordSafe(): boolean {
-    return this.password.length >= 8
+  get password() {
+    return this._password
+  }
+
+  async setHashPassword() {
+    this.password = await utilsGenerateHashPassword(this.password)
   }
 
   toHTTP(): Partial<Profile> {
@@ -42,4 +40,10 @@ export class User implements IUser {
       name: this.email,
     }
   }
+}
+
+function utilsGenerateHashPassword(password: string) {
+  // This function is a placeholder for a password hash crypt
+  // It is merely illustrative
+  return password
 }

@@ -1,16 +1,15 @@
 import { Inject } from '../../core/framework/inject'
+import { Validation } from '../../core/framework/validation'
 import { User } from './users.entity'
 import { IUserRepository } from './users.interface'
+import { createUserSchema, updateUserSchema } from './users.schema'
 
 export class CreateUser {
   private repository = Inject<IUserRepository>('IUserRepository')
 
   async execute(user: User): Promise<Partial<User>> {
-    user.validate()
-
-    if (!user.isPasswordSafe()) {
-      throw new Error('User password is week.')
-    }
+    await Validation.handle(user, createUserSchema)
+    await user.setHashPassword()
 
     const createdUser = await this.repository.create(user)
     return createdUser.toHTTP()
@@ -41,6 +40,9 @@ export class UpdateUser {
   private repository = Inject<IUserRepository>('IUserRepository')
 
   async execute(user: User, id: string): Promise<Partial<User>> {
+    await Validation.handle(user, updateUserSchema)
+    await user.setHashPassword()
+
     const updatedUser = await this.repository.update(user, id)
     return updatedUser.toHTTP()
   }
